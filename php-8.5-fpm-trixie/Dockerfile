@@ -1,6 +1,6 @@
 FROM php:8.5-fpm-trixie
 
-# Buildx подставляет архитектуру образа; нужен и для локальной сборки без --platform
+## Buildx подставляет архитектуру образа; нужен и для локальной сборки без --platform
 ARG TARGETARCH
 
 RUN set -eux; \
