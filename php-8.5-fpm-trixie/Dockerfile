@@ -20,7 +20,6 @@ RUN set -eux; \
     libjpeg62-turbo-dev \
     libpng-dev \
     libpq-dev \
-    libsqlite3-dev \
     libwebp-dev \
     libxml2-dev \
     libxpm-dev \
@@ -59,10 +58,8 @@ RUN docker-php-ext-configure intl; \
     pdo \
     pdo_mysql \
     pdo_pgsql \
-    pdo_sqlite \
     pgsql \
     sockets \
-    sqlite3 \
     xml \
     xsl \
     zip
