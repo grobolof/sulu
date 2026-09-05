@@ -60,7 +60,7 @@ SULU_ADMIN_EMAIL=admin@sulu.docker.local
 
 👇 Если [`MAILPIT_ENABLED`](#MAILPIT_ENABLED)=1, контейнер направит `mail()` PHP в Mailpit и пропишет `MAILER_DSN` в `app/.env`. Письма смотрите на `http://localhost:8025`.
 
-## 🌍 Русский язык админки
+## Русская локализация для админ-панели 🌍
 
 Из коробки интерфейс админки Sulu доступен на английском и немецком. Русский перевод можно подключить отдельно: его скачивают с [Crowdin](https://sulu.crowdin.com/sulusulu) и включают в конфиге проекта.
 
