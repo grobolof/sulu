@@ -1,0 +1,2 @@
+-- Дамп PostgreSQL для первичной инициализации контейнера.
+-- Файл может быть пустым: Sulu создаст схему через sulu:build / doctrine:migrations:migrate.
