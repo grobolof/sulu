@@ -23,38 +23,6 @@
 3. **docker-entrypoint.sh** — скрипт выполняется при запуске контейнера. Он содержит логику по установке и настройке
    `Sulu` для работы из коробки. В процессе выполнения скачивается и устанавливается актуальная версия `Sulu` из [sulu/skeleton][2] (если еще не установлена), выполняется `sulu:build` и настраиваются все инструменты для работы.
 
-## 🌍 Русский язык админки
-
-Из коробки интерфейс админки Sulu доступен на английском и немецком. Русский перевод можно подключить отдельно: его скачивают с [Crowdin][3] и включают в конфиге проекта.
-
-Это язык **интерфейса админки** (меню, кнопки, формы). Язык контента сайта настраивается отдельно в webspace (`config/webspaces/`).
-
-1. В `app/config/packages/sulu_admin.yaml` добавьте локаль `ru`:
-
-```yaml
-sulu_core:
-    locales:
-        en: English
-        de: Deutsch
-        ru: Русский
-    translations:
-        - en
-        - de
-        - ru
-```
-
-2. Скачайте перевод:
-
-```bash
-php bin/adminconsole sulu:admin:download-language ru
-```
-
-3. Очистите кеш админки и в профиле пользователя выберите русский язык.
-
-Если языка `ru` ещё нет на Crowdin, команда не скачает файлы, а интерфейс останется на английском (fallback). Тогда можно [попросить команду Sulu][4] завести язык в проекте переводов или положить свои файлы `admin.ru.json` в `translations/` проекта.
-
-Подробнее: [Getting Started][5] (секция про языки админки) и список языков на [Crowdin][3].
-
 ## 📄 Лицензия
 
 [![Лицензия MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -72,6 +40,3 @@ php bin/adminconsole sulu:admin:download-language ru
 
 [1]: https://sulu.io
 [2]: https://github.com/sulu/skeleton
-[3]: https://sulu.crowdin.com/sulusulu
-[4]: https://sulu.io/contact-us
-[5]: https://docs.sulu.io/en/latest/book/getting-started.html
