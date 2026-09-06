@@ -12,10 +12,12 @@ stop:
 down:
 	docker compose down -v
 
-# Очистить кэш Sulu (admin и website):
+# Очистить кэш Sulu (admin и website).
+# error_log=/dev/null глушит User Deprecated от Doctrine/Flysystem/Twig при прогреве контейнера.
 cache-clear:
-	docker compose exec -it application php bin/adminconsole cache:clear
-	docker compose exec -it application php bin/websiteconsole cache:clear
+	docker compose exec -T application rm -rf var/cache
+	docker compose exec -it application php -d error_log=/dev/null bin/adminconsole cache:clear
+	docker compose exec -it application php -d error_log=/dev/null bin/websiteconsole cache:clear
 
 # КОМАНДЫ ДОСТУПНЫ ПРИ УСЛОВИИ ЧТО ПРОЕКТ SULU УЖЕ СОЗДАН:
 
@@ -25,7 +27,7 @@ sulu-build:
 
 ## Создать файл миграции:
 migrations-create:
-	docker compose exec -it application php bin/adminconsole make:migration
+	docker compose exec -it application php bin/adminconsole doctrine:migrations:diff --no-interaction --namespace=DoctrineMigrations
 
 ## Накатить все миграции:
 migrations-up:
@@ -46,7 +48,9 @@ websiteconsole: ## Пример: make websiteconsole CMD="debug:router"
 # КОМАНДА ДОСТУПНА ПРИ УСЛОВИИ ЧТО УСТАНОВЛЕН ПАКЕТ PHPSTAN:
 
 ## Проверить код на ошибки:
+# phpstan-symfony читает дамп контейнера website/dev (APP_ENV в .env = prod).
 phpstan:
+	docker compose exec -it application php -d error_log=/dev/null bin/websiteconsole cache:warmup --env=dev
 	docker compose exec -it application php vendor/bin/phpstan analyse
 
 # КОМАНДЫ ДОСТУПНЫ ПРИ УСЛОВИИ ЧТО УСТАНОВЛЕН ПАКЕТ PHPCS:
