@@ -13,8 +13,11 @@ RUN set -eux; \
     default-mysql-client \
     dos2unix \
     gettext-base \
+    gifsicle \
     git \
     iputils-ping \
+    jpegoptim \
+    libavif-bin \
     libfreetype6-dev \
     libicu-dev \
     libjpeg62-turbo-dev \
@@ -30,15 +33,21 @@ RUN set -eux; \
     nodejs \
     npm \
     openssl \
+    optipng \
+    pngquant \
     postgresql-client \
     sendmail \
     supervisor \
     unzip \
     wait-for-it \
+    webp \
     wget \
     zip \
     zlib1g-dev; \
 	rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g svgo; \
+    npm cache clean --force
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN set -eux; \
