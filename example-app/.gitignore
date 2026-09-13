@@ -2,7 +2,20 @@
 .DS_Store
 
 .env
-node_modules
+.env.local
+.env.local.php
+.env.*.local
+.phpunit.result.cache
+.phpunit.cache
+auth.json
+
+/vendor
+/node_modules
+/var
+/public/bundles
+/public/uploads
+/public/admin
+/config/secrets/prod/prod.decrypt.private.php
 
 *.log
 *.pid

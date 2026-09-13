@@ -1,19 +1,17 @@
 # Быстрый старт 🚀
 
-- ⬇️ Скачайте [example-app](.) (переименуйте раздел под ваш проект).
+- ⬇️ Скачайте [example-app](.) (переименуйте каталог под ваш проект).
 - 📄 Скопируйте `.env.example` в `.env` (см. [таблицу с переменными](#env-vars)). СУБД проекта — PostgreSQL.
-- ⚡ Запустите проект выполнив команду из корня проекта: `make up`.
+- ⚡ Запустите проект выполнив команду из корня репозитория: `make up`.
 - 📊 В логах контейнера `application` вам будет доступен процесс создания проекта.
 - ✅ Завершением сборки можно считать появление строки `✅ КОНТЕЙНЕР ГОТОВ — ЗАПУСКАЮ NGINX И PHP-FPM`.
-
-⚠️ **КОРЕНЬ ПРОЕКТА** означает файлы приложения в папке `app`, которые будут смонтированы в контейнер!
 
 <a id="env-vars"></a>
 
 | Название переменной | Описание переменной | Требуется |
 | :------------------ | :------------------ | :-------- |
 | <a id="APP_HOST"></a>[APP_HOST](#APP_HOST) | Хост вашего проекта (хост необходимо добавить в файл hosts вашей системы, пример: `127.0.0.1   sulu.docker.local`) | ✅ |
-| <a id="APP_PATH"></a>[APP_PATH](#APP_PATH) | Путь от корня до проекта внутри контейнера | ✅ |
+| <a id="APP_PATH"></a>[APP_PATH](#APP_PATH) | Путь внутри контейнера, куда монтируется корень репозитория (`./:${APP_PATH}`) | ✅ |
 | <a id="DB_CONNECTION"></a>[DB_CONNECTION](#DB_CONNECTION) | Драйвер Doctrine. Для этого примера — `pgsql`. Допустимо: `pgsql`, `mysql`, `mariadb`, `sqlite` | ✅ |
 | <a id="DB_HOST"></a>[DB_HOST](#DB_HOST) | Хост базы данных (хостом БД является название контейнера СУБД из docker-compose.yml; используется для СУБД и Doctrine) | ✅ |
 | <a id="DB_PORT"></a>[DB_PORT](#DB_PORT) | Порт базы данных. Для PostgreSQL — `5432` | ✅ |
@@ -31,8 +29,8 @@
 - Сайт: `http://APP_HOST` (заменить [**APP_HOST**](#APP_HOST) на хост из `.env` файла).
 - Админка: `http://APP_HOST/admin`. Логин и пароль по умолчанию: **admin** / **admin**.
 
-1. Если в каталоге `app` ещё не было проекта, контейнер сам создаст актуальную версию Sulu через `composer create-project sulu/skeleton`.
-2. При первом создании проекта в файл `app/.env` записываются `DATABASE_URL`, `DEFAULT_URI` и `SULU_ADMIN_EMAIL` из доступов к СУБД и [APP_HOST](#APP_HOST).
+1. Если в корне репозитория ещё нет `bin/adminconsole`, контейнер сам создаст актуальную версию Sulu через `composer create-project sulu/skeleton`. Файлы репозитория (`docker-compose.yml`, `makefile`, `.env`, `README.md`) не перезаписываются.
+2. При первом создании проекта в корневой `.env` (тот же файл, что читает Compose) записываются `DATABASE_URL`, `DEFAULT_URI` и `SULU_ADMIN_EMAIL` из доступов к СУБД и [APP_HOST](#APP_HOST).
 3. При первом старте выполняется `php bin/adminconsole sulu:build dev` (схема, фикстуры, пользователь admin). На следующих стартах накатываются миграции Doctrine.
 4. Для работы с приложением используйте `php bin/adminconsole` (админка) и `php bin/websiteconsole` (сайт) — см. [команды](#команды), `make console` и `make websiteconsole`.
 5. 🔥 **Sulu** успешно установлен!
@@ -43,7 +41,7 @@
 
 ## Доступы СУБД для Sulu через переменные окружения
 
-👇 При первом создании проекта значение уже подставляется в `app/.env` как `DATABASE_URL`. Если создаёте проект вручную, замените в `app/.env` переменную `DATABASE_URL` (из [DB_CONNECTION](#DB_CONNECTION), [DB_HOST](#DB_HOST), [DB_PORT](#DB_PORT), [DB_DATABASE](#DB_DATABASE), [DB_USERNAME](#DB_USERNAME), [DB_PASSWORD](#DB_PASSWORD)).
+👇 При первом создании проекта значение уже подставляется в `.env` как `DATABASE_URL`. Если создаёте проект вручную, замените в `.env` переменную `DATABASE_URL` (из [DB_CONNECTION](#DB_CONNECTION), [DB_HOST](#DB_HOST), [DB_PORT](#DB_PORT), [DB_DATABASE](#DB_DATABASE), [DB_USERNAME](#DB_USERNAME), [DB_PASSWORD](#DB_PASSWORD)).
 
 ```
 DATABASE_URL="postgresql://login:pass@database:5432/sulu?serverVersion=18&charset=utf8"
@@ -58,7 +56,7 @@ SULU_ADMIN_EMAIL=admin@sulu.docker.local
 
 ## Настройка почты через Mailpit
 
-👇 Если [`MAILPIT_ENABLED`](#MAILPIT_ENABLED)=1, контейнер направит `mail()` PHP в Mailpit и пропишет `MAILER_DSN` в `app/.env`. Письма смотрите на `http://localhost:8025`.
+👇 Если [`MAILPIT_ENABLED`](#MAILPIT_ENABLED)=1, контейнер направит `mail()` PHP в Mailpit и пропишет `MAILER_DSN` в `.env`. Письма смотрите на `http://localhost:8025`.
 
 ## Русская локализация для админ-панели
 
@@ -66,7 +64,7 @@ SULU_ADMIN_EMAIL=admin@sulu.docker.local
 
 Это язык **интерфейса админки** (меню, кнопки, формы). Язык контента сайта настраивается отдельно в webspace (`config/webspaces/`).
 
-1. В `app/config/packages/sulu_admin.yaml` добавьте локаль `ru`:
+1. В `config/packages/sulu_admin.yaml` добавьте локаль `ru`:
 
 ```yaml
 sulu_core:
