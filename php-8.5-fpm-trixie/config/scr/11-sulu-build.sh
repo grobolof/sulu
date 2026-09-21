@@ -1,5 +1,6 @@
 #!/bin/bash
-# Первый запуск: sulu:build dev (схема, фикстуры, пользователь admin/admin).
+# Первый запуск: таблицы Sulu (без сущностей App\), фикстуры, пользователь admin/admin,
+# затем doctrine:migrations:migrate для таблиц приложения.
 # Повторные запуски: doctrine:migrations:migrate.
 # Если СУБД ещё не готова — шаг не роняет контейнер, только предупреждает.
 
@@ -13,10 +14,31 @@ sulu_is_initialized() {
     --max-results=1 --no-interaction >/dev/null 2>&1
 }
 
+run_sulu_schema() {
+  php /tmp/scr/sulu-schema-without-app.php
+}
+
 run_build() {
   # MassiveBuild спрашивает «Look good?»; UserBuilder — пароль админа.
   # Без --no-interaction, иначе QuestionHelper падает (у пароля нет default).
-  printf 'y\nadmin\n' | timeout 600 php bin/adminconsole sulu:build dev
+  # database-билдер sulu:build создаёт и таблицы приложения, поэтому схему
+  # собирает sulu-schema-without-app.php, а остальные шаги идут по отдельности.
+  adminconsole doctrine:database:create --if-not-exists --no-interaction || return 1
+  run_sulu_schema || return 1
+
+  local target
+  for target in homepage fixtures user system_collections security; do
+    printf 'y\nadmin\n' | timeout 600 php bin/adminconsole sulu:build "$target" --nodeps --keep-exit-code || return 1
+  done
+}
+
+after_build() {
+  log info "Накатываю миграции приложения…"
+  if run_migrations; then
+    log success "Миграции выполнены"
+  else
+    log warning "Миграции не выполнены — проверьте подключение к БД"
+  fi
 }
 
 run_migrations() {
@@ -34,9 +56,10 @@ elif [[ $DB_CONNECTION == sqlite ]]; then
       log warning "Миграции не выполнены — проверьте подключение к БД"
     fi
   else
-    log info "Инициализирую Sulu (sqlite): sulu:build dev…"
+    log info "Инициализирую Sulu (sqlite): схема Sulu, затем фикстуры…"
     if run_build; then
       log success "Sulu инициализирован (логин admin / пароль admin)"
+      after_build
     else
       log warning "sulu:build не выполнен — проверьте подключение к БД"
     fi
@@ -67,7 +90,7 @@ else
         log warning "Миграции не выполнены — проверьте подключение к БД"
       fi
     else
-      log info "Инициализирую Sulu: sulu:build dev…"
+      log info "Инициализирую Sulu: схема Sulu, затем фикстуры…"
       built=0
       for _ in 1 2 3 4 5; do
         if run_build; then
@@ -78,6 +101,7 @@ else
       done
       if [[ $built == 1 ]]; then
         log success "Sulu инициализирован (логин admin / пароль admin)"
+        after_build
       else
         log warning "sulu:build не выполнен — проверьте подключение к БД"
       fi
