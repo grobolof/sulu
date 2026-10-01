@@ -1,6 +1,6 @@
 #!/bin/bash
-# Первый запуск: таблицы Sulu (без сущностей App\), фикстуры, пользователь admin/admin,
-# затем doctrine:migrations:migrate для таблиц приложения.
+# Первый запуск: таблицы Sulu (без сущностей App\), пользователь admin/admin,
+# затем doctrine:migrations:migrate для таблиц приложения. Фикстуры не накатываются.
 # Повторные запуски: doctrine:migrations:migrate.
 # Если СУБД ещё не готова — шаг не роняет контейнер, только предупреждает.
 
@@ -27,7 +27,7 @@ run_build() {
   run_sulu_schema || return 1
 
   local target
-  for target in homepage fixtures user system_collections security; do
+  for target in homepage user system_collections security; do
     printf 'y\nadmin\n' | timeout 600 php bin/adminconsole sulu:build "$target" --nodeps --keep-exit-code || return 1
   done
 }
@@ -56,7 +56,7 @@ elif [[ $DB_CONNECTION == sqlite ]]; then
       log warning "Миграции не выполнены — проверьте подключение к БД"
     fi
   else
-    log info "Инициализирую Sulu (sqlite): схема Sulu, затем фикстуры…"
+    log info "Инициализирую Sulu (sqlite): схема Sulu, затем пользователь admin…"
     if run_build; then
       log success "Sulu инициализирован (логин admin / пароль admin)"
       after_build
@@ -90,7 +90,7 @@ else
         log warning "Миграции не выполнены — проверьте подключение к БД"
       fi
     else
-      log info "Инициализирую Sulu: схема Sulu, затем фикстуры…"
+      log info "Инициализирую Sulu: схема Sulu, затем пользователь admin…"
       built=0
       for _ in 1 2 3 4 5; do
         if run_build; then
