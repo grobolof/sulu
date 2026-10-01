@@ -1,6 +1,7 @@
 #!/bin/bash
-# Первый запуск: таблицы Sulu (без сущностей App\), пользователь admin/admin,
-# затем doctrine:migrations:migrate для таблиц приложения. Фикстуры не накатываются.
+# Первый запуск: таблицы Sulu (без сущностей App\), типы медиа-коллекций,
+# пользователь admin/admin, затем doctrine:migrations:migrate для таблиц приложения.
+# Фикстуры приложения не накатываются.
 # Повторные запуски: doctrine:migrations:migrate.
 # Если СУБД ещё не готова — шаг не роняет контейнер, только предупреждает.
 
@@ -11,11 +12,26 @@ adminconsole() {
 sulu_is_initialized() {
   adminconsole doctrine:query:dql \
     'SELECT u.id FROM Sulu\Bundle\SecurityBundle\Entity\User u' \
-    --max-results=1 --no-interaction >/dev/null 2>&1
+    --max-result=1 --no-interaction >/dev/null 2>&1 \
+    && collection_types_ready
+}
+
+# Тип id=2 (collection.system) нужен билдеру system_collections.
+# Пока его нет, инициализация не закончена: прошлый запуск мог создать admin и упасть здесь.
+collection_types_ready() {
+  local out
+  out=$(adminconsole dbal:run-sql "SELECT id FROM me_collection_types WHERE id = 2" --no-interaction 2>&1) || return 1
+  if grep -q 'empty result' <<<"$out"; then
+    return 1
+  fi
 }
 
 run_sulu_schema() {
   php /tmp/scr/sulu-schema-without-app.php
+}
+
+seed_collection_types() {
+  php /tmp/scr/sulu-collection-types.php
 }
 
 run_build() {
@@ -23,8 +39,11 @@ run_build() {
   # Без --no-interaction, иначе QuestionHelper падает (у пароля нет default).
   # database-билдер sulu:build создаёт и таблицы приложения, поэтому схему
   # собирает sulu-schema-without-app.php, а остальные шаги идут по отдельности.
+  # --nodeps пропускает fixtures, откуда берётся тип коллекции id=2,
+  # поэтому типы грузим отдельно, без фикстур приложения.
   adminconsole doctrine:database:create --if-not-exists --no-interaction || return 1
   run_sulu_schema || return 1
+  seed_collection_types || return 1
 
   local target
   for target in homepage user system_collections security; do
